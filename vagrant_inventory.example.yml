@@ -1,12 +1,11 @@
 - name: alexagile
-  ansible_machine_name: local.alexagile.com
+  ansible_machine_name: alexagile
   box: ubuntu/trusty64
   ram: 2048
   ip: 192.168.33.40
   port_guest: 22
   port_host: 2040
-  target_folder: /var/www/local.alexagile.com
-  ansible_playbook: ./ansible/playbooks/playbook.yml
+  target_folder: /var/www/alexagile
+  ansible_playbook: ./ansible/main.yml
   ansible_extra_vars: { php_version: 7 }
-  ansible_verbose: false
-  # ansible_verbose: vvvv
+  ansible_verbose: false #false|vvvv

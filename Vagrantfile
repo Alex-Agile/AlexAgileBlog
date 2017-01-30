@@ -18,6 +18,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.ssh.insert_key = true
     config.ssh.forward_agent = true
 
+    # Optimize network connection
+    config.vm.provider "virtualbox" do |v|
+       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+       v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+    end
+
     # Iterate through entries in YAML file
     inventory.each do |inventory|
         config.vm.define inventory["name"] do |machine|
@@ -35,8 +41,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             machine.vm.network "forwarded_port", guest: inventory["port_guest"], host: inventory["port_host"], id: 'ssh'
 
             # Sync folder settings
-            machine.vm.synced_folder ".", inventory["target_folder"],
-                mount_options: ["dmode=777,fmode=777"]
+            machine.vm.synced_folder ".", inventory["target_folder"], nfs: true
 
             # Virtal machine provider settings
             machine.vm.provider :virtualbox do |vb|
@@ -50,14 +55,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             end
 
             # Provisioning settings
-            # machine.vm.provision "ansible" do |ansible|
-            #     ansible.inventory_path = './ansible/hosts'
-            #     ansible.playbook       = inventory["ansible_playbook"]
-            #     ansible.limit          = inventory["ansible_machine_name"]
-            #     ansible.verbose        = 'false'
-            #     ansible.extra_vars     = inventory["ansible_extra_vars"]
-            #     ansible.verbose        = inventory["ansible_verbose"]
-            # end
+            machine.vm.provision "ansible" do |ansible|
+                ansible.inventory_path = './ansible/hosts'
+                ansible.playbook       = inventory["ansible_playbook"]
+                ansible.limit          = inventory["ansible_machine_name"]
+                ansible.verbose        = 'false'
+                ansible.extra_vars     = inventory["ansible_extra_vars"]
+                ansible.verbose        = inventory["ansible_verbose"]
+            end
         end
     end
 end
