@@ -61,6 +61,31 @@ doctrine:
         naming_strategy: doctrine.orm.naming_strategy.underscore
         auto_mapping: true
 
+# Doctrine cache
+doctrine_cache:
+    providers:
+        my_apc_metadata_cache:
+            type: apc
+            namespace: metadata_cache_ns
+        my_apc_query_cache:
+            namespace: query_cache_ns
+            apc: ~
+
+# Doctrine migrations
+doctrine_migrations:
+    dir_name: "%kernel.root_dir%/DoctrineMigrations"
+    namespace: Application\Migrations
+    table_name: migration_versions
+    name: Application Migrations
+
+sensio_framework_extra:
+    router:      { annotations: true }
+    request:     { converters: true, auto_convert: true }
+    view:        { annotations: true }
+    cache:       { annotations: true }
+    security:    { annotations: true }
+    psr_message: { enabled: false } # Defaults to true if the PSR-7 bridge is installed
+
 # Swiftmailer Configuration
 swiftmailer:
     transport: "%mailer_transport%"

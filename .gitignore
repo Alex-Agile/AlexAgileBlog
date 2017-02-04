@@ -18,3 +18,4 @@ vagrant_inventory.yml
 !var/SymfonyRequirements.php
 /vendor/
 /web/bundles/
+/src/Solid/
