@@ -42,8 +42,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
             # Sync folder settings
             machine.vm.synced_folder ".", inventory["target_folder"], nfs: true
+            # machine.vm.synced_folder ".", inventory["target_folder"],
+            #                 mount_options: ["dmode=777,fmode=777"]
 
-            # Virtal machine provider settings
+            # Virtual machine provider settings
             machine.vm.provider :virtualbox do |vb|
                 vb.name = inventory["name"]
 
