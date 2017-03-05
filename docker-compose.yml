@@ -1,0 +1,57 @@
+version: '2'
+
+volumes:
+  database_data:
+    driver: local
+
+services:
+  apache2:
+    build: ./docker/apache/
+    environment:
+      - APP_DOMAIN=local.alexagile.com
+      - APP_DOC_ROOT=/var/www/web
+      - APACHE_SERVERNAME=AlexAgile
+      - APACHE_RUN_USER=www-data
+      - APACHE_RUN_GROUP=www-data
+      - APACHE_PID_FILE=/var/run/apache2/apache2.pid
+      - APACHE_RUN_DIR=/var/run/apache2
+      - APACHE_LOCK_DIR=/var/lock/apache2
+      - APACHE_LOG_DIR=/var/log/apache2
+    ports:
+      - 80:80
+      - 443:443
+    links:
+      - php
+    volumes_from:
+      - php
+    tty: true
+
+  php:
+    build: ./docker/php/
+    expose:
+      - 9000
+    volumes:
+      - .:/var/www
+
+  mysql:
+    image: mysql:latest
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    volumes:
+      - database_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: alexagile
+      MYSQL_DATABASE: alexagile
+      MYSQL_USER: alexagile
+      MYSQL_PASSWORD: alexagile
+
+  composer:
+    image: composer/composer:master-alpine
+    working_dir: /var/www/
+    volumes_from:
+      - php
+    command: install
+    # container usage:
+    #   docker run --rm -v $(pwd):/var/www -v ~/.ssh:/root/.ssh -w /var/www composer/composer:master-alpine [command]
