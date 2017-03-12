@@ -1,4 +1,5 @@
 FROM php:7.1.2-fpm
+MAINTAINER Alex Agile <alexagile@alexagile.com>
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -23,16 +24,23 @@ RUN pecl install \
     memcached \
     redis \
     xdebug \
-    zip \
-    && docker-php-ext-enable \
-        apcu \
-        memcached \
-        redis \
-        xdebug \
-        zip
+    zip
 
-# Compile and install latest version of intl extension
-RUN curl -sS -o /tmp/icu.tar.gz -L http://download.icu-project.org/files/icu4c/57.1/icu4c-57_1-src.tgz \
+# configure xdebug extension
+COPY ./xdebug.ini /tmp/
+RUN cat /tmp/xdebug.ini >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && rm -f /tmp/xdebug.ini
+
+# enable pecl extensions
+RUN docker-php-ext-enable \
+    apcu \
+    memcached \
+    redis \
+    xdebug \
+    zip
+
+# Compile and install latest version of intl extension (Symfony projects required)
+RUN curl -sS -o /tmp/icu.tar.gz -L http://download.icu-project.org/files/icu4c/58.2/icu4c-58_2-src.tgz \
     && tar -zxf /tmp/icu.tar.gz -C /tmp && cd /tmp/icu/source \
     && ./configure --prefix=/usr/local && make && make install
 

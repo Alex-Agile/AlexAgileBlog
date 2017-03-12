@@ -5,8 +5,25 @@ volumes:
     driver: local
 
 services:
+  php-fpm:
+    build: ./docker/php-fpm/
+    working_dir: /var/www/
+    expose:
+      - 9000
+    volumes:
+      - .:/var/www
+
+  php-cli:
+      build: ./docker/php-cli/
+      working_dir: /var/www/
+      ports:
+        - 9090:9090
+      volumes_from:
+        - php-fpm
+
   apache2:
     build: ./docker/apache/
+    working_dir: /var/www/
     environment:
       - APP_DOMAIN=local.alexagile.com
       - APP_DOC_ROOT=/var/www/web
@@ -21,37 +38,30 @@ services:
       - 80:80
       - 443:443
     links:
-      - php
+      - php-fpm
     volumes_from:
-      - php
+      - php-fpm
     tty: true
-
-  php:
-    build: ./docker/php/
-    expose:
-      - 9000
-    volumes:
-      - .:/var/www
 
   mysql:
     image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: alexagile
+      MYSQL_DATABASE: alexagile
+      MYSQL_USER: alexagile
+      MYSQL_PASSWORD: alexagile
     ports:
       - 3306:3306
     expose:
       - 3306
     volumes:
       - database_data:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: alexagile
-      MYSQL_DATABASE: alexagile
-      MYSQL_USER: alexagile
-      MYSQL_PASSWORD: alexagile
 
+  # container usage:
+  #  docker run --rm -v $(pwd):/var/www -v ~/.ssh:/root/.ssh -w /var/www composer:latest [command]
   composer:
-    image: composer/composer:master-alpine
+    image: composer:latest
     working_dir: /var/www/
     volumes_from:
-      - php
+      - php-fpm
     command: install
-    # container usage:
-    #   docker run --rm -v $(pwd):/var/www -v ~/.ssh:/root/.ssh -w /var/www composer/composer:master-alpine [command]
