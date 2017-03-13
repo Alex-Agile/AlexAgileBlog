@@ -11,7 +11,7 @@ services:
     expose:
       - 9000
     links:
-      - php-fpm
+      - mysql
     volumes:
       - .:/var/www
 
@@ -21,7 +21,7 @@ services:
     ports:
       - 9090:9090
     links:
-      - php-fpm
+      - mysql
     volumes_from:
       - php-fpm
 
