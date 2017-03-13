@@ -4,6 +4,7 @@
   <component name="PhpUnit">
     <phpunit_settings>
       <PhpUnitSettings load_method="CUSTOM_LOADER" />
+      <phpunit_by_interpreter interpreter_id="4107dc25-2246-4a3f-ad79-b18e6c2d4aeb" load_method="CUSTOM_LOADER" configuration_file_path="/var/www/local.doclertictac.com/phpunit.xml" custom_loader_path="/var/www/local.doclertictac.com/vendor/bin/phpunit" phpunit_phar_path="" use_configuration_file="true" />
     </phpunit_settings>
   </component>
 </project>
