@@ -10,16 +10,20 @@ services:
     working_dir: /var/www/
     expose:
       - 9000
+    links:
+      - php-fpm
     volumes:
       - .:/var/www
 
   php-cli:
-      build: ./docker/php-cli/
-      working_dir: /var/www/
-      ports:
-        - 9090:9090
-      volumes_from:
-        - php-fpm
+    build: ./docker/php-cli/
+    working_dir: /var/www/
+    ports:
+      - 9090:9090
+    links:
+      - php-fpm
+    volumes_from:
+      - php-fpm
 
   apache2:
     build: ./docker/apache/
@@ -44,7 +48,7 @@ services:
     tty: true
 
   mysql:
-    image: mysql:latest
+    image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: alexagile
       MYSQL_DATABASE: alexagile
