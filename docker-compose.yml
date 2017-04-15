@@ -1,0 +1,76 @@
+version: '2'
+
+volumes:
+  mysql_data:
+    driver: local
+
+services:
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: alexagile
+      MYSQL_DATABASE: alexagile
+      MYSQL_USER: alexagile
+      MYSQL_PASSWORD: alexagile
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  php:
+    build: ./docker/php
+    working_dir: /var/www/
+    expose:
+      - 9000
+    links:
+      - mysql
+    volumes:
+      - .:/var/www
+
+  # container usage:
+  #  docker-compose run testing [php bin/console]
+  #  docker-compose run testing /var/www/vendor/bin/phpunit
+  testing:
+    build: ./docker/testing
+    working_dir: /var/www/
+    ports:
+      - 9090:9090
+    links:
+      - mysql
+    volumes_from:
+      - php
+
+  apache:
+    build: ./docker/apache
+    working_dir: /var/www/
+    environment:
+      - APP_DOMAIN=local.alexagile.com
+      - APP_DOC_ROOT=/var/www/web
+      - APACHE_SERVERNAME=AlexAgile
+      - APACHE_RUN_USER=www-data
+      - APACHE_RUN_GROUP=www-data
+      - APACHE_PID_FILE=/var/run/apache2/apache2.pid
+      - APACHE_RUN_DIR=/var/run/apache2
+      - APACHE_LOCK_DIR=/var/lock/apache2
+      - APACHE_LOG_DIR=/var/log/apache2
+    ports:
+      - 80:80
+      - 443:443
+    links:
+      - php
+    volumes_from:
+      - php
+    tty: true
+
+  # container usage:
+  #  docker-compose run composer [command]
+  composer:
+    build: ./docker/composer
+    working_dir: /var/www/
+    links:
+      - mysql
+    volumes_from:
+      - php
+    command: -q
