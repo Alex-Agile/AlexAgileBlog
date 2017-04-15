@@ -1,12 +1,26 @@
 version: '2'
 
 volumes:
-  database_data:
+  mysql_data:
     driver: local
 
 services:
-  php-fpm:
-    build: ./docker/php-fpm/
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: alexagile
+      MYSQL_DATABASE: alexagile
+      MYSQL_USER: alexagile
+      MYSQL_PASSWORD: alexagile
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  php:
+    build: ./docker/php
     working_dir: /var/www/
     expose:
       - 9000
@@ -15,18 +29,21 @@ services:
     volumes:
       - .:/var/www
 
-  php-cli:
-    build: ./docker/php-cli/
+  # container usage:
+  #  docker-compose run testing [php bin/console]
+  #  docker-compose run testing /var/www/vendor/bin/phpunit
+  testing:
+    build: ./docker/testing
     working_dir: /var/www/
     ports:
       - 9090:9090
     links:
       - mysql
     volumes_from:
-      - php-fpm
+      - php
 
-  apache2:
-    build: ./docker/apache/
+  apache:
+    build: ./docker/apache
     working_dir: /var/www/
     environment:
       - APP_DOMAIN=local.alexagile.com
@@ -42,30 +59,18 @@ services:
       - 80:80
       - 443:443
     links:
-      - php-fpm
+      - php
     volumes_from:
-      - php-fpm
+      - php
     tty: true
 
-  mysql:
-    image: mysql:5.7
-    environment:
-      MYSQL_ROOT_PASSWORD: alexagile
-      MYSQL_DATABASE: alexagile
-      MYSQL_USER: alexagile
-      MYSQL_PASSWORD: alexagile
-    ports:
-      - 3306:3306
-    expose:
-      - 3306
-    volumes:
-      - database_data:/var/lib/mysql
-
   # container usage:
-  #  docker run --rm -v $(pwd):/var/www -v ~/.ssh:/root/.ssh -w /var/www composer:latest [command]
+  #  docker-compose run composer [command]
   composer:
-    image: composer:latest
+    build: ./docker/composer
     working_dir: /var/www/
+    links:
+      - mysql
     volumes_from:
-      - php-fpm
-    command: install
+      - php
+    command: -q

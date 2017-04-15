@@ -1,4 +1,4 @@
-FROM php:7.1.2-fpm
+FROM php:7.1.2-cli
 MAINTAINER Alex Agile <alexagile@alexagile.com>
 
 # Install dependencies
@@ -16,15 +16,15 @@ RUN docker-php-ext-install \
     gd \
     json \
     mcrypt \
-    pdo_mysql
+    pdo_mysql \
+    zip
 
 # install pecl extensions
 RUN pecl install \
     apcu-beta \
     memcached \
     redis \
-    xdebug \
-    zip
+    xdebug
 
 # configure xdebug extension
 COPY ./xdebug.ini /tmp/
@@ -36,8 +36,7 @@ RUN docker-php-ext-enable \
     apcu \
     memcached \
     redis \
-    xdebug \
-    zip
+    xdebug
 
 # Compile and install latest version of intl extension (Symfony projects required)
 RUN curl -sS -o /tmp/icu.tar.gz -L http://download.icu-project.org/files/icu4c/58.2/icu4c-58_2-src.tgz \

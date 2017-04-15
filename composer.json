@@ -41,8 +41,10 @@
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installRequirementsFile",
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::prepareDeploymentTarget"
         ],
+        "test": "vendor/bin/phpunit",
         "post-install-cmd": [
-            "@symfony-scripts"
+            "@symfony-scripts",
+            "php bin/console doctrine:schema:create"
         ],
         "post-update-cmd": [
             "@symfony-scripts"
