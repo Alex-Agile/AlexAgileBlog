@@ -74,4 +74,3 @@ services:
     volumes_from:
       - php
     command: -q
-
