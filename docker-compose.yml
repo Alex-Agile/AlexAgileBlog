@@ -1,76 +1,207 @@
 version: '2'
 
+# Delete docker cache
+# docker rm $(docker ps -q -f status=exited)
+# Remove dangling volumes
+# docker volume rm `docker volume ls -q -f dangling=true`
+
 volumes:
-  mysql_data:
+  mysql_master_data:
     driver: local
 
+networks:
+  mysql-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/24
+
 services:
-  mysql:
-    image: mysql:5.7
+  mysql-master:
+    build: docker/mysql/master
     environment:
-      MYSQL_ROOT_PASSWORD: alexagile
-      MYSQL_DATABASE: alexagile
-      MYSQL_USER: alexagile
-      MYSQL_PASSWORD: alexagile
+      - MYSQL_ROOT_PASSWORD=alexagile
+      - MYSQL_USER=alexagile
+      - MYSQL_PASSWORD=alexagile
+      - MYSQL_DATABASE=alexagile
     ports:
-      - 3306:3306
-    expose:
-      - 3306
+      - 33061:3306
+    networks:
+      mysql-network:
+        aliases:
+          - mysql-master
+        ipv4_address: 172.20.0.2
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_master_data:/var/lib/mysql
 
-  php:
-    build: ./docker/php
-    working_dir: /var/www/
-    expose:
-      - 9000
-    links:
-      - mysql
-    volumes:
-      - .:/var/www
-
-  # container usage:
-  #  docker-compose run testing [php bin/console]
-  #  docker-compose run testing /var/www/vendor/bin/phpunit
-  testing:
-    build: ./docker/testing
-    working_dir: /var/www/
-    ports:
-      - 9090:9090
-    links:
-      - mysql
-    volumes_from:
-      - php
-
-  apache:
-    build: ./docker/apache
-    working_dir: /var/www/
+  mysql-slave:
+    build: docker/mysql/slave
+    depends_on:
+      - mysql-master
     environment:
-      - APP_DOMAIN=local.alexagile.com
-      - APP_DOC_ROOT=/var/www/web
-      - APACHE_SERVERNAME=AlexAgile
-      - APACHE_RUN_USER=www-data
-      - APACHE_RUN_GROUP=www-data
-      - APACHE_PID_FILE=/var/run/apache2/apache2.pid
-      - APACHE_RUN_DIR=/var/run/apache2
-      - APACHE_LOCK_DIR=/var/lock/apache2
-      - APACHE_LOG_DIR=/var/log/apache2
+      - MYSQL_ROOT_PASSWORD=alexagile
+#      - MASTER_HOST='172.20.0.2'
+#      - MASTER_PORT=3306
+#      - MASTER_USER='repl_user'
+#      - MASTER_PASSWORD='repl_password'
+#      - DEMO_VAR=${DEMO_VAR}
     ports:
-      - 80:80
-      - 443:443
-    links:
-      - php
-    volumes_from:
-      - php
-    tty: true
+      - 33062:3306
+    networks:
+      mysql-network:
+        aliases:
+          - mysql-slave
+        ipv4_address: 172.20.0.3
+#    volumes:
+#      - mysql_data:/var/lib/mysql
 
-  # container usage:
-  #  docker-compose run composer [command]
-  composer:
-    build: ./docker/composer
-    working_dir: /var/www/
-    links:
-      - mysql
-    volumes_from:
-      - php
-    command: -q
+
+#  mysql-master:
+#    build: docker/mysql
+#    networks:
+#      mysql-network:
+#        aliases:
+#          - mysql-master
+#    ports:
+#      - 3310:3306
+#    environment:
+#      - MYSQL_ROOT_PASSWORD=alexagile
+#      - MYSQL_DATABASE=alexagile
+#      - SERVER_ID=1
+#      - BIND_ADDRESS=0.0.0.0
+#
+#  mysql-slave:
+#    build: docker/mysql
+#    ports:
+#      - 3321:3306
+#    networks:
+#      mysql-network:
+#        aliases:
+#          - mysql-slave
+#    environment:
+#      - MYSQL_ROOT_PASSWORD=alexagile
+#      - MYSQL_DATABASE=alexagile
+#      - SERVER_ID=2
+#      - BIND_ADDRESS=0.0.0.0
+#      - AUTO_INIT_MASTER_IP=mysql-master
+
+#  mysql-master:
+#    image: 'bitnami/mysql:latest'
+#    ports:
+#      - '3310:3306'
+#    environment:
+#      - MYSQL_REPLICATION_MODE=master
+#      - MYSQL_REPLICATION_USER=repl_user
+#      - MYSQL_REPLICATION_PASSWORD=repl_password
+#      - MYSQL_ROOT_PASSWORD=master_root_password
+#      - MYSQL_USER=alexagile
+#      - MYSQL_PASSWORD=alexagile
+#      - MYSQL_DATABASE=alexagile
+#      - skip_name_resolve
+#    volumes:
+#      - mysql_master_data:/bitnami/mysql
+#      - docker/mysql/data:/bitnami/mysql
+#
+#  mysql-slave:
+#    image: 'bitnami/mysql:latest'
+#    ports:
+#      - '3321:3306'
+#    depends_on:
+#      - mysql-master
+#    environment:
+#      - MYSQLEPLICATION_MODE=slave
+#      - MYSQL_REPLICATION_USER=my_repl_user
+#      - MYSQL_REPLICATION_PASSWORD=my_repl_password
+#      - MYSQL_MASTER_HOST=master
+#      - MYSQL_MASTER_ROOT_PASSWORD=master_root_password
+#      - MYSQL_ROOT_PASSWORD=slave_root_password
+#      - MYSQL_USER=alexagile
+#      - MYSQL_PASSWORD=alexagile
+#      - MYSQL_DATABASE=alexagile
+
+
+
+
+
+
+#version: '2'
+#
+#volumes:
+#  mysql_master_data:
+#    driver: local
+#
+#services:
+#
+#  mysql:
+#    image: mysql:5.7
+#    environment:
+#      MYSQL_ROOT_PASSWORD: alexagile
+#      MYSQL_DATABASE: alexagile
+#      MYSQL_USER: alexagile
+#      MYSQL_PASSWORD: alexagile
+#    ports:
+#      - 3306:3306
+#    expose:
+#      - 3306
+#    volumes:
+#      - mysql_data:/var/lib/mysql
+#
+##  php:
+##    build: docker/php
+##    working_dir: /var/www/
+##    expose:
+##      - 9000
+##    links:
+##      - mysql-master
+##      - mysql-slave
+##    volumes:
+##      - .:/var/www
+##
+##  # container usage:
+##  #  docker-compose run testing [php bin/console]
+##  #  docker-compose run testing /var/www/vendor/bin/phpunit
+##  testing:
+##    build: docker/testing
+##    working_dir: /var/www/
+##    ports:
+##      - 9090:9090
+##    links:
+##      - mysql-master
+##      - mysql-slave
+##    volumes_from:
+##      - php
+##
+##  apache:
+##    build: docker/apache
+##    working_dir: /var/www/
+##    environment:
+##      - APP_DOMAIN=local.alexagile.com
+##      - APP_DOC_ROOT=/var/www/web
+##      - APACHE_SERVERNAME=AlexAgile
+##      - APACHE_RUN_USER=www-data
+##      - APACHE_RUN_GROUP=www-data
+##      - APACHE_PID_FILE=/var/run/apache2/apache2.pid
+##      - APACHE_RUN_DIR=/var/run/apache2
+##      - APACHE_LOCK_DIR=/var/lock/apache2
+##      - APACHE_LOG_DIR=/var/log/apache2
+##    ports:
+##      - 80:80
+##      - 443:443
+##    links:
+##      - php
+##    volumes_from:
+##      - php
+##    tty: true
+##
+##  # container usage:
+##  #  docker-compose run composer [command]
+##  composer:
+##    build: docker/composer
+##    working_dir: /var/www/
+##    links:
+##      - mysql-master
+##      - mysql-slave
+##    volumes_from:
+##      - php
+##    command: -q
