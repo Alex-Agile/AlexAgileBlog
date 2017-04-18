@@ -21,10 +21,10 @@ services:
   mysql-master:
     build: docker/mysql/master
     environment:
-      - MYSQL_ROOT_PASSWORD=alexagile
       - MYSQL_USER=alexagile
-      - MYSQL_PASSWORD=alexagile
       - MYSQL_DATABASE=alexagile
+      - MYSQL_REPLICATION_USER=repl_user
+      - MYSQL_REPLICATION_SLAVE_IP=172.20.0.3
     ports:
       - 33061:3306
     networks:
@@ -40,12 +40,9 @@ services:
     depends_on:
       - mysql-master
     environment:
-      - MYSQL_ROOT_PASSWORD=alexagile
-#      - MASTER_HOST='172.20.0.2'
-#      - MASTER_PORT=3306
-#      - MASTER_USER='repl_user'
-#      - MASTER_PASSWORD='repl_password'
-#      - DEMO_VAR=${DEMO_VAR}
+      - MASTER_HOST=172.20.0.2
+      - MASTER_PORT=3306
+      - MASTER_USER=repl_user
     ports:
       - 33062:3306
     networks:
@@ -53,8 +50,6 @@ services:
         aliases:
           - mysql-slave
         ipv4_address: 172.20.0.3
-#    volumes:
-#      - mysql_data:/var/lib/mysql
 
 
 #  mysql-master:

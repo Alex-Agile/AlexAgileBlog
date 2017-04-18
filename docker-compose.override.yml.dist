@@ -1,0 +1,12 @@
+version: '2'
+
+services:
+  mysql-master:
+    environment:
+      - MYSQL_ROOT_PASSWORD=root-secret-here
+      - MYSQL_PASSWORD=secret-here
+      - MYSQL_REPLICATION_PASSWORD=replication-secret-here
+  mysql-slave:
+    environment:
+      - MYSQL_ROOT_PASSWORD=root-secret-here
+      - MASTER_PASSWORD=replication-secret-here

@@ -19,3 +19,4 @@ vagrant_inventory.yml
 /vendor/
 /web/bundles/
 /src/Solid/
+/docker-compose.override.yml
