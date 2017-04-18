@@ -19,6 +19,7 @@ networks:
 
 services:
   mysql-master:
+    container_name: mysql-master
     build: docker/mysql/master
     environment:
       - MYSQL_USER=alexagile
@@ -36,6 +37,7 @@ services:
       - mysql_master_data:/var/lib/mysql
 
   mysql-slave:
+    container_name: mysql-slave
     build: docker/mysql/slave
     depends_on:
       - mysql-master
