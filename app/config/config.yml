@@ -57,6 +57,13 @@ doctrine:
         #   2. Uncomment database_path in parameters.yml.dist
         #   3. Uncomment next line:
         #path:     "%database_path%"
+        slaves:
+            slave1:
+                host:     "%database_slave1_host%"
+                port:     "%database_slave1_port%"
+                dbname:   "%database_slave1_name%"
+                user:     "%database_slave1_user%"
+                password: "%database_slave1_password%"
 
     orm:
         auto_generate_proxy_classes: "%kernel.debug%"
